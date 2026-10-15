@@ -24,7 +24,7 @@ Due to GitHub file size limits, the input test videos, the rendered split-screen
 
 ### How to set up the data:
 * **Video Mode:** Download `test_video.mp4` from the cloud link above, create a folder named `data/` inside the project root directory, and place the file inside it (`data/test_video.mp4`).
-* **Image Sequence Mode (KITTI):** Download the *Left Color Images* from the official KITTI Vision Benchmark Suite, extract the frames into `data/kitti/training/image_2/`, and set `modalita = "foto"` inside `main()` in `test.py`.
+* **Image Sequence Mode (KITTI):** Download the *Left Color Images* from the official KITTI Vision Benchmark Suite, extract the frames into `data/kitti/`, and set `modalita = "foto"` inside `main()` in `test.py`.
 
 ---
 
