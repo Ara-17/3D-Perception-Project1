@@ -7,7 +7,14 @@ import numpy as np
 from ultralytics import YOLO
 
 # Verifica della disponibilità di GPU e impostazione del dispositivo
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+
+print(f"Dispositivo in uso: {device}")
 
 # Caricamento modelli pre-addestrati
 
@@ -275,19 +282,19 @@ def run_perception_pipeline(source_type="video", source_path="data/test_video.mp
 
 def main():
     # Modalità di esecuzione -> "video" per un video, "foto" per una cartella di immagini
-    modalita = "foto"
+    modalita = "video"
     
     if modalita == "video":
         run_perception_pipeline(
             source_type="video", 
-            source_path="data/test_video1.mp4", 
+            source_path="data/Video test/test_video1.mp4", 
             save_output=True, 
             output_filename="output_dimostrazione.mp4"
         )
     elif modalita == "foto":
         run_perception_pipeline(
             source_type="foto", 
-            source_path="data/kitti", 
+            source_path="data/Foto test/kitti", 
             save_output=True, 
             output_filename="output_dimostrazione.mp4"
         )
