@@ -20,7 +20,7 @@ The pipeline performs real-time 2D semantic detection (**YOLOv8m**) and dense mo
 ## 3. Dataset, Videos & Presentation Material
 Due to GitHub file size limits, the input test videos, the rendered split-screen output video (`output_dimostrazione.mp4`), the technical report, and the presentation slides are hosted on the cloud at the following link:
 
-**[Download Videos, Report & Slides (Google Drive / OneDrive)](https://univpr-my.sharepoint.com/:f:/g/personal/arashpreet_singh_studenti_unipr_it/IgAE0jMhY3gxR4TUWjIqPIvuAQess9RQ5cbHtm0_FJkuIbs?e=fkXCiT)**
+**[Download Videos, Report & Slides (OneDrive)](https://univpr-my.sharepoint.com/:f:/g/personal/arashpreet_singh_studenti_unipr_it/IgAE0jMhY3gxR4TUWjIqPIvuAQess9RQ5cbHtm0_FJkuIbs?e=fkXCiT)**
 
 ### How to set up the data:
 * **Video Mode:** Download `test_video.mp4` from the cloud link above, create a folder named `data/` inside the project root directory, and place the file inside it (`data/test_video.mp4`).
