@@ -7,14 +7,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # Verifica della disponibilità di GPU e impostazione del dispositivo
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.backends.mps.is_available():
-    device = torch.device("mps")
-else:
-    device = torch.device("cpu")
-
-print(f"Dispositivo in uso: {device}")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Caricamento modelli pre-addestrati
 
@@ -22,13 +15,13 @@ print(f"Dispositivo in uso: {device}")
 yolo_model = YOLO("yolov8m.pt")
 
 # Stima della profondita monoculare (MiDaS)
-midas = torch.hub.load("intel-isl/MiDaS", "MiDaS_small")
+midas = torch.hub.load("intel-isl/MiDaS", "DPT_Hybrid")
 midas.to(device)
 midas.eval()
 
 # Trasformazioni di input per MiDaS
 midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
-transform = midas_transforms.small_transform
+transform = midas_transforms.dpt_transform
 
 # Mappatura delle classi di veicoli rilevate da YOLOv8
 TARGET_CLASSES = {
@@ -45,7 +38,7 @@ tracked_objects = []
 SMOOTHING_ALPHA = 0.25  # Peso del nuovo valore: 0.25 nuovo + 0.75 storico
 
 # Parametri per la conversione della profondità stimata in metri
-DEPTH_SCALE = 3500.0
+DEPTH_SCALE = 7000.0
 EPSILON = 1e-4
 
 def extract_roi_depth(depth_map, x1, y1, x2, y2, crop_ratio=0.5):
@@ -66,7 +59,7 @@ def extract_roi_depth(depth_map, x1, y1, x2, y2, crop_ratio=0.5):
     # Calcolo della mediana per ridurre l'influenza di outlier
     return float(np.median(roi))
 
-def apply_temporal_smoothing(current_center, raw_distance, max_pixel_drift=60):
+def apply_temporal_smoothing(current_center, raw_distance, label_text, max_pixel_drift=60):
     # Associa il veicolo rilevato nel frame corrente con quelli tracciati nei frame precedenti e applica un filtro passa-basso (EMA) per stabilizzare la stima della distanza
     global tracked_objects
     best_match_idx = -1
@@ -74,6 +67,8 @@ def apply_temporal_smoothing(current_center, raw_distance, max_pixel_drift=60):
     
     # Cerca il veicolo più vicino tra quelli tracciati
     for idx, obj in enumerate(tracked_objects):
+        if obj["class"] != label_text:
+            continue
         dist = np.linalg.norm(np.array(current_center) - np.array(obj["center"]))
         if dist < min_dist and dist < max_pixel_drift:
             min_dist = dist
@@ -135,8 +130,8 @@ def process_single_frame(frame, width, height):
                 center = ((x1 + x2) // 2, (y1 + y2) // 2)
                 
                 # Applicazione del filtro passa-basso per stabilizzare la stima della distanza
-                smoothed_distance, match_idx = apply_temporal_smoothing(center, est_distance)
-                current_frame_tracked.append({"center": center, "distance": smoothed_distance})
+                smoothed_distance, match_idx = apply_temporal_smoothing(center, est_distance, label_text)
+                current_frame_tracked.append({"center": center, "distance": smoothed_distance, "class": label_text})
 
                 # Definizione soglia di allerta in base alla classe del veicolo
                 soglia_allerta = 15.0 if cls_id in (0, 1) else 10.0
@@ -282,19 +277,19 @@ def run_perception_pipeline(source_type="video", source_path="data/test_video.mp
 
 def main():
     # Modalità di esecuzione -> "video" per un video, "foto" per una cartella di immagini
-    modalita = "video"
+    modalita = "foto"
     
     if modalita == "video":
         run_perception_pipeline(
             source_type="video", 
-            source_path="data/Video test/test_video1.mp4", 
+            source_path="data/test_video1.mp4", 
             save_output=True, 
             output_filename="output_dimostrazione.mp4"
         )
     elif modalita == "foto":
         run_perception_pipeline(
             source_type="foto", 
-            source_path="data/Foto test/kitti", 
+            source_path="data/kitti2", 
             save_output=True, 
             output_filename="output_dimostrazione.mp4"
         )
